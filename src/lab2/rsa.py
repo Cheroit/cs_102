@@ -40,7 +40,7 @@ def multiplicative_inverse(e: int, phi: int) -> int:
     >>> multiplicative_inverse(7, 40)
     23
     """
-    a, b = e, phi
+    a, b = max(e,phi), min(phi,e)
 
     l = [[a, b, a % b, a // b, None, None]]
 
@@ -50,11 +50,11 @@ def multiplicative_inverse(e: int, phi: int) -> int:
 
     l[-1][4], l[-1][5] = 0, 1
 
-    for i in range(len(l) - 2, -1, -1):
+    for i in range(len(l) - 2, -1,-1):
         l[i][4] = l[i + 1][5]  # x_i = y_(i+1)
         l[i][5] = l[i + 1][4] - l[i + 1][5] * l[i][3]  # y_i = x_(i+1) - y_(i+1) * (a // b)_i
 
-    return l[0][4] % phi
+    return (l[0][5])%l[0][0]
 
 
 def generate_keypair(p: int, q: int) -> tp.Tuple[tp.Tuple[int, int], tp.Tuple[int, int]]:
