@@ -219,7 +219,21 @@ def check_solution(solution: tp.List[tp.List[str]]) -> bool:
 def check_solution(solution: tp.List[tp.List[str]]) -> bool:
     """ Если решение solution верно, то вернуть True, в противном случае False """
     # TODO: Add doctests with bad puzzles
-    pass
+    lines = []
+    lines += [get_row(solution, (i, 0)) for i in range(len(solution))]
+    lines += [get_col(solution, (0, i)) for i in range(len(solution[0]))]
+    lines += [
+        get_block(solution, (y, x))
+        for y in range(0, len(solution), 3)
+        for x in range(0, len(solution[y]), 3)
+    ]
+
+    for line in lines:
+        line = list(set(line))
+        if "." in line or len(line) != len(solution):
+            return False
+
+    return True
 
 
 def generate_sudoku(N: int) -> tp.List[tp.List[str]]:
@@ -243,7 +257,20 @@ def generate_sudoku(N: int) -> tp.List[tp.List[str]]:
     >>> check_solution(solution)
     True
     """
-    pass
+    grid = [["."] * 9 for _ in range(9)]
+    solution = solve(grid)
+
+    grid = solution
+
+    free_poses = [(y, x) for y in range(len(grid)) for x in range(len(grid[y]))]
+    for _ in range(len(grid) * len(grid[0]) - N):
+        index_pos = random.randint(0, len(free_poses) - 1)
+        pos = free_poses[index_pos]
+        del free_poses[index_pos]
+
+        grid[pos[0]][pos[1]] = "."
+
+    return grid
 
 
 if __name__ == "__main__":
