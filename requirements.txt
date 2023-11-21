@@ -10,3 +10,4 @@ tqdm==4.52.0
 networkx==2.5
 matplotlib==3.3.3
 python-louvain==0.14
+SudokuStudyLib~=1.0.7
