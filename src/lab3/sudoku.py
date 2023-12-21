@@ -1,5 +1,6 @@
 import pathlib
 import typing as tp
+import random
 
 T = tp.TypeVar("T")
 
@@ -41,7 +42,15 @@ def group(values: tp.List[T], n: int) -> tp.List[tp.List[T]]:
     >>> group([1,2,3,4,5,6,7,8,9], 3)
     [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
     """
-    pass
+    res = [[] for i in range(n)]
+    a = 0
+    b = 0
+    for i in range(n):
+        for j in range(n):
+            res[a].append(values[b])
+            b += 1
+        a += 1
+    return res
 
 
 def get_row(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.List[str]:
@@ -53,7 +62,7 @@ def get_row(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.List[str
     >>> get_row([['1', '2', '3'], ['4', '5', '6'], ['.', '8', '9']], (2, 0))
     ['.', '8', '9']
     """
-    pass
+    return grid[pos[0]] #возвращаем значения по указанному номеру строки
 
 
 def get_col(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.List[str]:
@@ -65,7 +74,12 @@ def get_col(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.List[str
     >>> get_col([['1', '2', '3'], ['4', '5', '6'], ['.', '8', '9']], (0, 2))
     ['3', '6', '9']
     """
-    pass
+    res = []
+    for i in grid:
+        for j in range(len(i)):
+            if j == pos[1]:
+                res.append(i[j])
+    return res
 
 
 def get_block(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.List[str]:
@@ -78,7 +92,29 @@ def get_block(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.List[s
     >>> get_block(grid, (8, 8))
     ['2', '8', '.', '.', '.', '5', '.', '7', '9']
     """
-    pass
+    res = []
+    # выбор строки, с которой начинается блок, в который входит значение
+    if pos[0] < 3:
+        c = 0
+    elif pos[0] > 5:
+        c = 6
+    else:
+        c = 3
+    # выбор столбца, с которой начинается блок, в который входит значение
+    if pos[1] < 3:
+        start_st = 0
+    elif pos[1] > 5:
+        start_st = 6
+    else:
+        start_st = 3
+    for i in range(3):
+        st = start_st
+        for j in range(3):
+            res.append(grid[c][st])
+            st += 1
+        c += 1
+
+    return res
 
 
 def find_empty_positions(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.Tuple[int, int]]:
@@ -90,7 +126,10 @@ def find_empty_positions(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.Tuple[in
     >>> find_empty_positions([['1', '2', '3'], ['4', '5', '6'], ['.', '8', '9']])
     (2, 0)
     """
-    pass
+    for i in range(len(grid)):
+        for j in range(len(grid[i])):
+            if grid[i][j] == '.':
+                return (i, j)
 
 
 def find_possible_values(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -> tp.Set[str]:
@@ -103,7 +142,28 @@ def find_possible_values(grid: tp.List[tp.List[str]], pos: tp.Tuple[int, int]) -
     >>> values == {'2', '5', '9'}
     True
     """
-    pass
+    global i
+    sp = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+    row = get_row(grid, pos)
+    col = get_col(grid, pos)
+    block = get_block(grid, pos)
+    not_res = []
+    for i in row:
+        if i.isnumeric():
+            not_res.append(i)
+    for i in col:
+        if i.isnumeric():
+            not_res.append(i)
+    for i in block:
+        if i.isnumeric():
+            not_res.append(i)
+    not_res = list(set(not_res))
+    val = set()
+    for i in sp:
+        if i not in not_res:
+            val.add(i)
+    return val
+
 
 
 def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]]:
@@ -118,13 +178,63 @@ def solve(grid: tp.List[tp.List[str]]) -> tp.Optional[tp.List[tp.List[str]]]:
     >>> solve(grid)
     [['5', '3', '4', '6', '7', '8', '9', '1', '2'], ['6', '7', '2', '1', '9', '5', '3', '4', '8'], ['1', '9', '8', '3', '4', '2', '5', '6', '7'], ['8', '5', '9', '7', '6', '1', '4', '2', '3'], ['4', '2', '6', '8', '5', '3', '7', '9', '1'], ['7', '1', '3', '9', '2', '4', '8', '5', '6'], ['9', '6', '1', '5', '3', '7', '2', '8', '4'], ['2', '8', '7', '4', '1', '9', '6', '3', '5'], ['3', '4', '5', '2', '8', '6', '1', '7', '9']]
     """
-    pass
+    free_pos = find_empty_positions(grid)
+    if free_pos is None:
+        return grid if check_solution(grid) else None
+
+    possible_values = find_possible_values(grid, free_pos)
+    for possible_value in possible_values:
+        last_value = grid[free_pos[0]][free_pos[1]]
+
+        grid[free_pos[0]][free_pos[1]] = possible_value
+
+        solution = solve(grid)
+        if solution is not None:
+            return solution
+
+        grid[free_pos[0]][free_pos[1]] = last_value
+
+    return None
 
 
 def check_solution(solution: tp.List[tp.List[str]]) -> bool:
     """ Если решение solution верно, то вернуть True, в противном случае False """
     # TODO: Add doctests with bad puzzles
-    pass
+    lines = []
+    lines += [get_row(solution, (i, 0)) for i in range(len(solution))]
+    lines += [get_col(solution, (0, i)) for i in range(len(solution[0]))]
+    lines += [
+        get_block(solution, (y, x))
+        for y in range(0, len(solution), 3)
+        for x in range(0, len(solution[y]), 3)
+    ]
+
+    for line in lines:
+        line = list(set(line))
+        if "." in line or len(line) != len(solution):
+            return False
+
+    return True
+
+
+def check_solution(solution: tp.List[tp.List[str]]) -> bool:
+    """ Если решение solution верно, то вернуть True, в противном случае False """
+    # TODO: Add doctests with bad puzzles
+    lines = []
+    lines += [get_row(solution, (i, 0)) for i in range(len(solution))]
+    lines += [get_col(solution, (0, i)) for i in range(len(solution[0]))]
+    lines += [
+        get_block(solution, (y, x))
+        for y in range(0, len(solution), 3)
+        for x in range(0, len(solution[y]), 3)
+    ]
+
+    for line in lines:
+        line = list(set(line))
+        if "." in line or len(line) != len(solution):
+            return False
+
+    return True
 
 
 def generate_sudoku(N: int) -> tp.List[tp.List[str]]:
@@ -148,7 +258,20 @@ def generate_sudoku(N: int) -> tp.List[tp.List[str]]:
     >>> check_solution(solution)
     True
     """
-    pass
+    grid = [["."] * 9 for _ in range(9)]
+    solution = solve(grid)
+
+    grid = solution
+
+    free_poses = [(y, x) for y in range(len(grid)) for x in range(len(grid[y]))]
+    for _ in range(len(grid) * len(grid[0]) - N):
+        index_pos = random.randint(0, len(free_poses) - 1)
+        pos = free_poses[index_pos]
+        del free_poses[index_pos]
+
+        grid[pos[0]][pos[1]] = "."
+
+    return grid
 
 
 if __name__ == "__main__":
