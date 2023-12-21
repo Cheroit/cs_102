@@ -1,6 +1,6 @@
 class film:
     def load_film(self):
-        f=open('films.txt', 'r')
+        f = open('/Users/maksim/Documents/GitHub/cs_102/src/lab4/filmss.txt', 'r')
         dict = {}
         for i in f:
             s=i.split(',')
@@ -10,7 +10,7 @@ class film:
 
 class users:
     def load_users(self):
-        f=open('users.txt', 'r')
+        f=open('/Users/maksim/Documents/GitHub/cs_102/src/lab4/users.txt', 'r')
         res=[]
         for i in f:
             m = list(map(int, i.split(',')))
@@ -20,8 +20,10 @@ class users:
 
 class analiz():
     def recomend(input):
-        dict_films=film.load_film(open('films.txt'))
-        ls_users=users.load_users(open('users.txt'))
+        f=film()
+        u=users()
+        dict_films=f.load_film()
+        ls_users=u.load_users()
         m=list(map(int,input.split(',')))
         res=[]
         for i in ls_users:
